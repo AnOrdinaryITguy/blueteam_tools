@@ -31,34 +31,45 @@ for Packet in PacketCapture:
     if 'ip' in Packet:
         #Checking TCP and UDP ports
         if hasattr(Packet, 'tcp'):
+            #making sure the Source port is within the registered port range
             print('TCP '+Packet['ip'].src+':'+Packet.tcp.srcport+' -> '+Packet['ip'].dst+':'+Packet.tcp.dstport)
-            if 1024 <= int(Packet.tcp.srcport) <= 49151 and 1024 <= int(Packet.tcp.dstport) <= 49151:
-                TCPconvsource = Packet['ip'].src+':'+Packet.tcp.srcport
-                TCPconvdest = Packet['ip'].dst+':'+Packet.tcp.dstport
-                L4_PacketGraph.add_node(TCPconvsource, color='green')
-                L4_PacketGraph.add_node(TCPconvdest, color='green')
-                L4_PacketGraph.add_edge(TCPconvsource,TCPconvdest, label='tcp')
+            if  int(Packet.tcp.srcport) <= 1024:
+                 TCPconvsource = Packet['ip'].src+':'+Packet.tcp.srcport
+                 L4_PacketGraph.add_node(TCPconvsource, color='green')
             else:
                 TCPconvsource = Packet['ip'].src
-                TCPconvdest = Packet['ip'].dst
                 L4_PacketGraph.add_node(TCPconvsource, color='green')
+            #making sure the Destination port is within the registered port range
+            if int(Packet.tcp.dstport) <= 1024:
+                TCPconvdest = Packet['ip'].dst+':'+Packet.tcp.dstport
                 L4_PacketGraph.add_node(TCPconvdest, color='green')
-                L4_PacketGraph.add_edge(TCPconvsource,TCPconvdest, label='tcp') #Should I add unregistered ports here?
+            else:
+                TCPconvdest = Packet['ip'].dst
+                L4_PacketGraph.add_node(TCPconvdest, color='green')
+
+            #Connecting the source and destination nodes:
+            L4_PacketGraph.add_edge(TCPconvsource,TCPconvdest, label='tcp')
+
         if hasattr(Packet, 'udp'):
             #Need to fix broadcast packets
             print('UDP '+Packet['ip'].src+':'+Packet.udp.srcport+' -> '+Packet['ip'].dst+':'+Packet.udp.dstport)
-            if 1024 <= int(Packet.udp.srcport) <= 49151 and 1024 <= int(Packet.udp.dstport) <= 49151:
+            #making sure the Source port is within the registered port range
+            if int(Packet.udp.srcport) <= 1024:
                 UDPconvsource = Packet['ip'].src+':'+Packet.udp.srcport
-                UDPconvdest = Packet['ip'].dst+':'+Packet.udp.dstport
                 L4_PacketGraph.add_node(UDPconvsource, color='yellow')
-                L4_PacketGraph.add_node(UDPconvdest, color='yellow')
-                L4_PacketGraph.add_edge(UDPconvsource,UDPconvdest, label='udp')
             else:
                 UDPconvsource = Packet['ip'].src
-                UDPconvdest = Packet['ip'].dst
                 L4_PacketGraph.add_node(UDPconvsource, color='yellow')
+            #making sure the Destination port is within the registered port range
+            if int(Packet.udp.dstport) <= 1024:
+                UDPconvdest = Packet['ip'].dst+':'+Packet.udp.dstport
                 L4_PacketGraph.add_node(UDPconvdest, color='yellow')
-                L4_PacketGraph.add_edge(UDPconvsource,UDPconvdest, label='udp') #Should I add unregistered ports here?
+            else:
+                UDPconvdest = Packet['ip'].dst
+                L4_PacketGraph.add_node(UDPconvdest, color='yellow') # add a special color for high dynamic ports?
+
+            #Connecting the source and destination nodes:
+            L4_PacketGraph.add_edge(UDPconvsource,UDPconvdest, label='udp') #Should I add unregistered ports here?
 
 
 # L3 graph
